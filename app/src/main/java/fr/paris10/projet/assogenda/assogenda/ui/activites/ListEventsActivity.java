@@ -32,6 +32,7 @@ public class ListEventsActivity extends AppCompatActivity {
     private ArrayList<HashMap<String,Object>> listValuesEvents = new ArrayList<>();
     private SimpleAdapter adapter;
     private List<Event> listeEvenements = new ArrayList<>();
+    List<Event> listEventSort = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,8 +45,7 @@ public class ListEventsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(),EventInfosActivity.class);
-                Event event = listeEvenements.get(position);
-
+                Event event = listEventSort.get(position);
                 intent.putExtra("eventUID", event.uid);
                 startActivity(intent);
             }
@@ -65,7 +65,7 @@ public class ListEventsActivity extends AppCompatActivity {
             }
         } catch (ParseException e) {
             e.printStackTrace();
-           return false;
+            return false;
         }
         return false;
     }
@@ -92,7 +92,6 @@ public class ListEventsActivity extends AppCompatActivity {
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                List<Event> listEventSort = new ArrayList<>();
                 int tailleList;
                 int nbEvent;
                 int eventRestant;
