@@ -28,11 +28,12 @@ public class EventInfosActivity extends AppCompatActivity {
     private SimpleAdapter adapter;
     private String eventUID;
     private Event event;
-    TextView nameEvent;
+    private TextView nameEvent;
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
 
 
+    private TextView nameEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
