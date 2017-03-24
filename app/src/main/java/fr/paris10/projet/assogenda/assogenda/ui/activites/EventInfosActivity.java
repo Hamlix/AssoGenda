@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -25,20 +26,22 @@ import java.util.Date;
 import java.util.HashMap;
 
 import fr.paris10.projet.assogenda.assogenda.R;
+import fr.paris10.projet.assogenda.assogenda.model.Association;
 import fr.paris10.projet.assogenda.assogenda.model.Event;
+
 
 public class EventInfosActivity extends AppCompatActivity {
     private ListView listInfos;
     private ArrayList<HashMap<String,Object>> listValues = new ArrayList<>();
     private SimpleAdapter adapter;
     private String eventUID;
+    private Event event;
     private TextView nameEvent;
+    private TextView nameAsso;
     private String name;
     private Date eventEndDate;
     private TextView participateButton;
-    private Event event;
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +52,8 @@ public class EventInfosActivity extends AppCompatActivity {
         String eventEnd = (String) getIntent().getExtras().get("eventEndDate");
         nameEvent = (TextView) findViewById(R.id.activity_event_infos_name_event);
         participateButton = (Button) findViewById(R.id.activity_event_infos_participate_button);
+        nameAsso = (TextView) findViewById(R.id.activity_event_infos_name_asso);
+
         loadEventInfoInBackground();
 
         try {
@@ -141,10 +146,42 @@ public class EventInfosActivity extends AppCompatActivity {
         reference.child(eventUID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+
                 if (dataSnapshot.exists()) {
                     event = dataSnapshot.getValue(Event.class);
                     event.uid=eventUID;
                     nameEvent.setText(event.name);
+
+                    nameEvent.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Toast.makeText(getApplicationContext(), event.name, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    nameAsso.setText(" ");
+                    DatabaseReference references = FirebaseDatabase.getInstance().getReference("association");
+                    references.child(event.association).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataS) {
+                            if (dataS.exists()) {
+                                final Association a = dataS.getValue(Association.class);
+                                nameAsso.setText(a.name);
+
+                                nameAsso.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        Toast.makeText(getApplicationContext(), a.name, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                     HashMap<String,Object> hashMapValueDateBegin = new HashMap<>();
                     hashMapValueDateBegin.put("title_info","Date de début : ");
                     hashMapValueDateBegin.put("content_info",event.start);
@@ -153,7 +190,7 @@ public class EventInfosActivity extends AppCompatActivity {
                     hashMapValueDateEnd.put("content_info",event.end);
                     HashMap<String,Object> hashMapValuePrice = new HashMap<>();
                     hashMapValuePrice.put("title_info","Prix : ");
-                    hashMapValuePrice.put("content_info",event.price);
+                    hashMapValuePrice.put("content_info",event.price+" €");
                     HashMap<String,Object> hashMapValueSpace = new HashMap<>();
                     hashMapValueSpace.put("title_info","Places disponible : ");
                     hashMapValueSpace.put("content_info",event.seat_free);
@@ -185,11 +222,22 @@ public class EventInfosActivity extends AppCompatActivity {
                     listInfos = (ListView) findViewById(R.id.activity_event_infos_list);
                     adapter = new SimpleAdapter(EventInfosActivity.this,listValues,R.layout.content_infos_event,from,to);
                     listInfos.setAdapter(adapter);
+
+                    listInfos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                            if(position == 5) {
+                                Toast.makeText(getApplicationContext(), event.location, Toast.LENGTH_LONG).show();
+                            } else if (position == 6) {
+                                Toast.makeText(getApplicationContext(), event.description, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
                 }
 
                 updateParticipate();
-            }
 
+            }
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.e("Error : ", "onCancelled", databaseError.toException());
